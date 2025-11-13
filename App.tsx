@@ -9,6 +9,10 @@ import PlusIcon from './components/icons/PlusIcon';
 import CalendarDaysIcon from './components/icons/CalendarDaysIcon';
 import GlobeAltIcon from './components/icons/GlobeAltIcon';
 import MagnifyingGlassIcon from './components/icons/MagnifyingGlassIcon';
+import GoalInput from './components/GoalInput';
+import ChartBarIcon from './components/icons/ChartBarIcon';
+import BankIcon from './components/icons/BankIcon';
+import ChevronDownIcon from './components/icons/ChevronDownIcon';
 
 const CURRENCIES = [
     { code: 'USD', name: 'United States Dollar' },
@@ -245,7 +249,7 @@ Based on this, provide some tips. For example, you could suggest areas where the
                                             placeholder="Search currency..."
                                             value={currencySearchTerm}
                                             onChange={(e) => setCurrencySearchTerm(e.target.value)}
-                                            className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                                            className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 hover:border-slate-500 transition-all"
                                         />
                                     </div>
                                     <div className="relative">
@@ -254,10 +258,11 @@ Based on this, provide some tips. For example, you could suggest areas where the
                                             id="currency"
                                             value={currency}
                                             onChange={(e) => setCurrency(e.target.value)}
-                                            className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all appearance-none"
+                                            className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-10 pr-10 py-2 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 hover:border-slate-500 transition-all appearance-none"
                                         >
                                             {filteredCurrencies.map(c => <option key={c.code} value={c.code}>{c.code} - {c.name}</option>)}
                                         </select>
+                                        <ChevronDownIcon className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                                     </div>
                                 </div>
                                 <div>
@@ -271,7 +276,7 @@ Based on this, provide some tips. For example, you could suggest areas where the
                                             onChange={handleOffDaysChange}
                                             min="0"
                                             max={daysInMonth}
-                                            className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-10 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                                            className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-10 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 hover:border-slate-500 transition-all"
                                         />
                                     </div>
                                 </div>
@@ -297,40 +302,26 @@ Based on this, provide some tips. For example, you could suggest areas where the
                         </div>
 
                         <div className="border-t border-slate-700"></div>
-
-                        <div>
-                            <h2 className="text-2xl font-bold text-white mb-4">Desired Profit</h2>
-                            <p className="text-slate-400 mb-4">How much extra would you like to earn this month after all bills are paid?</p>
-                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">{currencySymbol}</span>
-                                <input
-                                type="number"
-                                placeholder="Profit Goal"
-                                value={profit || ''}
-                                onChange={handleProfitChange}
-                                min="0"
-                                className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-8 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
-                                />
-                            </div>
-                        </div>
                         
+                        <GoalInput
+                            label="Desired Profit"
+                            description="How much extra would you like to earn this month after all bills are paid?"
+                            value={profit}
+                            onChange={handleProfitChange}
+                            currencySymbol={currencySymbol}
+                            icon={<ChartBarIcon className="w-6 h-6 text-green-400" />}
+                        />
+
                         <div className="border-t border-slate-700"></div>
 
-                        <div>
-                            <h2 className="text-2xl font-bold text-white mb-4">Monthly Savings</h2>
-                            <p className="text-slate-400 mb-4">How much would you like to set aside for savings this month?</p>
-                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">{currencySymbol}</span>
-                                <input
-                                type="number"
-                                placeholder="Savings Goal"
-                                value={savings || ''}
-                                onChange={handleSavingsChange}
-                                min="0"
-                                className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-8 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
-                                />
-                            </div>
-                        </div>
+                        <GoalInput
+                            label="Monthly Savings"
+                            description="How much would you like to set aside for savings this month?"
+                            value={savings}
+                            onChange={handleSavingsChange}
+                            currencySymbol={currencySymbol}
+                            icon={<BankIcon className="w-6 h-6 text-indigo-400" />}
+                        />
                     </div>
                     
                     <div className="lg:col-span-2">

@@ -17,17 +17,18 @@ const BillInput: React.FC<BillInputProps> = ({ bill, onUpdate, onRemove, currenc
         placeholder="Bill Name (e.g., Rent)"
         value={bill.name}
         onChange={(e) => onUpdate(bill.id, { name: e.target.value })}
-        className="flex-grow bg-slate-700/50 border border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+        className="flex-grow bg-slate-700/50 border border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 hover:border-slate-500 transition-all"
       />
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{currencySymbol}</span>
+      <div className="flex items-center w-36 bg-slate-700/50 border border-slate-600 rounded-md focus-within:ring-2 focus-within:ring-sky-500 hover:border-slate-500 transition-all">
+        <span className="pl-3 pr-2 text-slate-400 select-none">{currencySymbol}</span>
         <input
           type="number"
           placeholder="Amount"
           value={bill.amount || ''}
           onChange={(e) => onUpdate(bill.id, { amount: Math.max(0, parseFloat(e.target.value) || 0) })}
           min="0"
-          className="w-36 bg-slate-700/50 border border-slate-600 rounded-md pl-7 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+          className="w-full bg-transparent pr-3 py-2 text-white focus:outline-none"
+          aria-label="Bill amount"
         />
       </div>
       <button
