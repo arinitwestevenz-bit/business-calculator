@@ -4,6 +4,7 @@ import TargetIcon from './icons/TargetIcon';
 import ChartBarIcon from './icons/ChartBarIcon';
 import BankIcon from './icons/BankIcon';
 import DocumentTextIcon from './icons/DocumentTextIcon';
+import SparklesIcon from './icons/SparklesIcon';
 
 interface SummaryCardProps {
     totalExpenses: number;
@@ -13,9 +14,10 @@ interface SummaryCardProps {
     workingDays: number;
     currency: string;
     onPreviewStatement: () => void;
+    onGetAdvice: () => void;
 }
 
-const SummaryCard: React.FC<SummaryCardProps> = ({ totalExpenses, profit, savings, dailyEarnings, workingDays, currency, onPreviewStatement }) => {
+const SummaryCard: React.FC<SummaryCardProps> = ({ totalExpenses, profit, savings, dailyEarnings, workingDays, currency, onPreviewStatement, onGetAdvice }) => {
 
     const formatCurrency = (value: number) => {
         return value.toLocaleString('en-US', {
@@ -62,13 +64,22 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ totalExpenses, profit, saving
                     isBold={true}
                 />
             </div>
-            <button
-                onClick={onPreviewStatement}
-                className="w-full flex items-center justify-center space-x-2 bg-sky-600/20 text-sky-300 border border-sky-500/30 hover:bg-sky-500/30 hover:text-sky-200 transition-all rounded-lg py-3 font-semibold"
-            >
-                <DocumentTextIcon className="w-5 h-5" />
-                <span>Preview Statement</span>
-            </button>
+            <div className="space-y-3">
+                <button
+                    onClick={onGetAdvice}
+                    className="w-full flex items-center justify-center space-x-2 bg-amber-600/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 hover:text-amber-200 transition-all rounded-lg py-3 font-semibold"
+                >
+                    <SparklesIcon className="w-5 h-5" />
+                    <span>Get AI Financial Advice</span>
+                </button>
+                <button
+                    onClick={onPreviewStatement}
+                    className="w-full flex items-center justify-center space-x-2 bg-sky-600/20 text-sky-300 border border-sky-500/30 hover:bg-sky-500/30 hover:text-sky-200 transition-all rounded-lg py-3 font-semibold"
+                >
+                    <DocumentTextIcon className="w-5 h-5" />
+                    <span>Preview Statement</span>
+                </button>
+            </div>
         </div>
     );
 };

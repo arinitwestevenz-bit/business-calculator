@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { GoogleGenAI } from "@google/genai";
 import type { Bill } from './types';
 import BillInput from './components/BillInput';
 import SummaryCard from './components/SummaryCard';
 import StatementPreviewModal from './components/StatementPreviewModal';
+import FinancialAdviceModal from './components/FinancialAdviceModal';
 import PlusIcon from './components/icons/PlusIcon';
 import CalendarDaysIcon from './components/icons/CalendarDaysIcon';
 import GlobeAltIcon from './components/icons/GlobeAltIcon';
@@ -93,6 +95,9 @@ const App: React.FC = () => {
     const [currency, setCurrency] = useState<string>(() => getInitialState('currency', 'USD'));
     const [currencySearchTerm, setCurrencySearchTerm] = useState<string>('');
     const [isStatementVisible, setIsStatementVisible] = useState(false);
+    const [isAdviceVisible, setIsAdviceVisible] = useState(false);
+    const [advice, setAdvice] = useState('');
+    const [isAdviceLoading, setIsAdviceLoading] = useState(false);
 
     useEffect(() => { localStorage.setItem('bills', JSON.stringify(bills)); }, [bills]);
     useEffect(() => { localStorage.setItem('profit', JSON.stringify(profit)); }, [profit]);
@@ -170,6 +175,53 @@ const App: React.FC = () => {
             c.name.toLowerCase().includes(lowercasedFilter)
         );
     }, [currencySearchTerm]);
+
+    const getFinancialAdvice = async () => {
+        setIsAdviceVisible(true);
+        setIsAdviceLoading(true);
+        setAdvice('');
+
+        const formatCurrency = (value: number) => {
+            return new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: currency,
+            }).format(value);
+        };
+
+        const billsSummary = bills
+            .filter(b => b.name && b.amount > 0)
+            .map(b => `- ${b.name}: ${formatCurrency(b.amount)}`)
+            .join('\n');
+
+        const prompt = `You are a helpful and friendly financial coach. Analyze the following financial data and provide actionable, encouraging, and personalized advice. The user wants to find ways to save money and reach their goals faster. Keep the advice concise, positive, and easy to understand. Use markdown for formatting (e.g., headings, bullet points). Do not include a disclaimer in your response.
+
+Here is the user's financial data for the month:
+- Currency: ${currency}
+- Total Monthly Expenses: ${formatCurrency(totalExpenses)}
+- Breakdown of Expenses:
+${billsSummary || 'No expenses listed.'}
+- Desired Monthly Profit Goal: ${formatCurrency(profit)}
+- Monthly Savings Goal: ${formatCurrency(savings)}
+- Number of working days in the month: ${workingDays}
+- Required daily earnings to meet goals: ${formatCurrency(dailyEarnings)}
+
+Based on this, provide some tips. For example, you could suggest areas where they might be able to cut back on expenses, ideas for increasing income, or just general encouragement about their goals.`;
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: prompt,
+            });
+            setAdvice(response.text);
+        } catch (e) {
+            console.error(e);
+            const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+            setAdvice(`Sorry, the AI coach couldn't generate advice right now. Please try again later.\n\nError: ${errorMessage}`);
+        } finally {
+            setIsAdviceLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-900 bg-gradient-to-br from-slate-900 to-sky-900/50 p-4 sm:p-6 lg:p-8">
@@ -290,6 +342,7 @@ const App: React.FC = () => {
                             workingDays={workingDays}
                             currency={currency}
                             onPreviewStatement={() => setIsStatementVisible(true)}
+                            onGetAdvice={getFinancialAdvice}
                         />
                     </div>
                 </div>
@@ -305,6 +358,12 @@ const App: React.FC = () => {
                 workingDays={workingDays}
                 currency={currency}
                 currencySymbol={currencySymbol}
+            />
+            <FinancialAdviceModal
+                isOpen={isAdviceVisible}
+                onClose={() => setIsAdviceVisible(false)}
+                advice={advice}
+                isLoading={isAdviceLoading}
             />
         </div>
     );
