@@ -1,10 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Bill } from './types';
 import BillInput from './components/BillInput';
 import SummaryCard from './components/SummaryCard';
+import StatementPreviewModal from './components/StatementPreviewModal';
 import PlusIcon from './components/icons/PlusIcon';
 import CalendarDaysIcon from './components/icons/CalendarDaysIcon';
 import GlobeAltIcon from './components/icons/GlobeAltIcon';
+import MagnifyingGlassIcon from './components/icons/MagnifyingGlassIcon';
 
 const CURRENCIES = [
     { code: 'USD', name: 'United States Dollar' },
@@ -64,16 +66,39 @@ const CURRENCIES = [
     { code: 'ZMW', name: 'Zambian Kwacha' },
 ];
 
+const DEFAULT_BILLS: Bill[] = [
+    { id: crypto.randomUUID(), name: 'Monthly Rent', amount: 1200 },
+    { id: crypto.randomUUID(), name: 'Electricity Bill', amount: 75 },
+    { id: crypto.randomUUID(), name: 'Internet', amount: 60 },
+    { id: crypto.randomUUID(), name: 'Transport', amount: 150 },
+];
+
+const getInitialState = <T,>(key: string, defaultValue: T): T => {
+    try {
+        const storedValue = localStorage.getItem(key);
+        if (storedValue) {
+            return JSON.parse(storedValue);
+        }
+    } catch (error) {
+        console.error(`Error reading from localStorage for key "${key}":`, error);
+    }
+    return defaultValue;
+};
+
 const App: React.FC = () => {
-    const [bills, setBills] = useState<Bill[]>([
-        { id: crypto.randomUUID(), name: 'Monthly Rent', amount: 1200 },
-        { id: crypto.randomUUID(), name: 'Electricity Bill', amount: 75 },
-        { id: crypto.randomUUID(), name: 'Internet', amount: 60 },
-        { id: crypto.randomUUID(), name: 'Transport', amount: 150 },
-    ]);
-    const [profit, setProfit] = useState<number>(1000);
-    const [offDays, setOffDays] = useState<number>(8);
-    const [currency, setCurrency] = useState<string>('USD');
+    const [bills, setBills] = useState<Bill[]>(() => getInitialState('bills', DEFAULT_BILLS));
+    const [profit, setProfit] = useState<number>(() => getInitialState('profit', 1000));
+    const [savings, setSavings] = useState<number>(() => getInitialState('savings', 500));
+    const [offDays, setOffDays] = useState<number>(() => getInitialState('offDays', 8));
+    const [currency, setCurrency] = useState<string>(() => getInitialState('currency', 'USD'));
+    const [currencySearchTerm, setCurrencySearchTerm] = useState<string>('');
+    const [isStatementVisible, setIsStatementVisible] = useState(false);
+
+    useEffect(() => { localStorage.setItem('bills', JSON.stringify(bills)); }, [bills]);
+    useEffect(() => { localStorage.setItem('profit', JSON.stringify(profit)); }, [profit]);
+    useEffect(() => { localStorage.setItem('savings', JSON.stringify(savings)); }, [savings]);
+    useEffect(() => { localStorage.setItem('offDays', JSON.stringify(offDays)); }, [offDays]);
+    useEffect(() => { localStorage.setItem('currency', JSON.stringify(currency)); }, [currency]);
 
     const addBill = () => {
         setBills([...bills, { id: crypto.randomUUID(), name: '', amount: 0 }]);
@@ -97,7 +122,7 @@ const App: React.FC = () => {
         const workingDays = daysInMonth - actualOffDays;
 
         const expenses = bills.reduce((sum, bill) => sum + (bill.amount || 0), 0);
-        const totalGoal = expenses + (profit || 0);
+        const totalGoal = expenses + (profit || 0) + (savings || 0);
         
         const daily = workingDays > 0 ? totalGoal / workingDays : 0;
 
@@ -107,7 +132,7 @@ const App: React.FC = () => {
             workingDays,
             daysInMonth
         };
-    }, [bills, profit, offDays]);
+    }, [bills, profit, savings, offDays]);
     
     const currencySymbol = useMemo(() => {
         try {
@@ -122,6 +147,10 @@ const App: React.FC = () => {
         setProfit(Math.max(0, parseFloat(e.target.value) || 0));
     };
 
+    const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSavings(Math.max(0, parseFloat(e.target.value) || 0));
+    };
+
     const handleOffDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value, 10);
         if (isNaN(value)) {
@@ -130,6 +159,17 @@ const App: React.FC = () => {
             setOffDays(Math.max(0, Math.min(value, daysInMonth)));
         }
     };
+
+    const filteredCurrencies = useMemo(() => {
+        if (!currencySearchTerm) {
+            return CURRENCIES;
+        }
+        const lowercasedFilter = currencySearchTerm.toLowerCase();
+        return CURRENCIES.filter(c =>
+            c.code.toLowerCase().includes(lowercasedFilter) ||
+            c.name.toLowerCase().includes(lowercasedFilter)
+        );
+    }, [currencySearchTerm]);
 
     return (
         <div className="min-h-screen bg-slate-900 bg-gradient-to-br from-slate-900 to-sky-900/50 p-4 sm:p-6 lg:p-8">
@@ -146,6 +186,16 @@ const App: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="currency" className="block text-sm font-medium text-slate-400 mb-2">Currency</label>
+                                    <div className="relative mb-2">
+                                        <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search currency..."
+                                            value={currencySearchTerm}
+                                            onChange={(e) => setCurrencySearchTerm(e.target.value)}
+                                            className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                                        />
+                                    </div>
                                     <div className="relative">
                                         <GlobeAltIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                                         <select
@@ -154,7 +204,7 @@ const App: React.FC = () => {
                                             onChange={(e) => setCurrency(e.target.value)}
                                             className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all appearance-none"
                                         >
-                                            {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.code} - {c.name}</option>)}
+                                            {filteredCurrencies.map(c => <option key={c.code} value={c.code}>{c.code} - {c.name}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -211,19 +261,51 @@ const App: React.FC = () => {
                                 />
                             </div>
                         </div>
+                        
+                        <div className="border-t border-slate-700"></div>
+
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-4">Monthly Savings</h2>
+                            <p className="text-slate-400 mb-4">How much would you like to set aside for savings this month?</p>
+                             <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">{currencySymbol}</span>
+                                <input
+                                type="number"
+                                placeholder="Savings Goal"
+                                value={savings || ''}
+                                onChange={handleSavingsChange}
+                                min="0"
+                                className="w-full bg-slate-700/50 border border-slate-600 rounded-md pl-8 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+                                />
+                            </div>
+                        </div>
                     </div>
                     
                     <div className="lg:col-span-2">
                         <SummaryCard 
                             totalExpenses={totalExpenses}
                             profit={profit}
+                            savings={savings}
                             dailyEarnings={dailyEarnings}
                             workingDays={workingDays}
                             currency={currency}
+                            onPreviewStatement={() => setIsStatementVisible(true)}
                         />
                     </div>
                 </div>
             </main>
+            <StatementPreviewModal
+                isOpen={isStatementVisible}
+                onClose={() => setIsStatementVisible(false)}
+                bills={bills}
+                profit={profit}
+                savings={savings}
+                totalExpenses={totalExpenses}
+                dailyEarnings={dailyEarnings}
+                workingDays={workingDays}
+                currency={currency}
+                currencySymbol={currencySymbol}
+            />
         </div>
     );
 };

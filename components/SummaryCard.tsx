@@ -2,16 +2,20 @@ import React from 'react';
 import DollarSignIcon from './icons/DollarSignIcon';
 import TargetIcon from './icons/TargetIcon';
 import ChartBarIcon from './icons/ChartBarIcon';
+import BankIcon from './icons/BankIcon';
+import DocumentTextIcon from './icons/DocumentTextIcon';
 
 interface SummaryCardProps {
     totalExpenses: number;
     profit: number;
+    savings: number;
     dailyEarnings: number;
     workingDays: number;
     currency: string;
+    onPreviewStatement: () => void;
 }
 
-const SummaryCard: React.FC<SummaryCardProps> = ({ totalExpenses, profit, dailyEarnings, workingDays, currency }) => {
+const SummaryCard: React.FC<SummaryCardProps> = ({ totalExpenses, profit, savings, dailyEarnings, workingDays, currency, onPreviewStatement }) => {
 
     const formatCurrency = (value: number) => {
         return value.toLocaleString('en-US', {
@@ -43,15 +47,28 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ totalExpenses, profit, dailyE
                     value={formatCurrency(profit)}
                     color="text-green-400"
                 />
+                <SummaryItem 
+                    icon={<BankIcon className="w-6 h-6 text-indigo-400"/>}
+                    label="Monthly Savings Goal"
+                    value={formatCurrency(savings)}
+                    color="text-indigo-400"
+                />
                 <div className="border-t border-slate-700 my-4"></div>
                 <SummaryItem 
                     icon={<TargetIcon className="w-6 h-6 text-sky-400"/>}
                     label="Total Monthly Goal"
-                    value={formatCurrency(totalExpenses + profit)}
+                    value={formatCurrency(totalExpenses + profit + savings)}
                     color="text-sky-400"
                     isBold={true}
                 />
             </div>
+            <button
+                onClick={onPreviewStatement}
+                className="w-full flex items-center justify-center space-x-2 bg-sky-600/20 text-sky-300 border border-sky-500/30 hover:bg-sky-500/30 hover:text-sky-200 transition-all rounded-lg py-3 font-semibold"
+            >
+                <DocumentTextIcon className="w-5 h-5" />
+                <span>Preview Statement</span>
+            </button>
         </div>
     );
 };
