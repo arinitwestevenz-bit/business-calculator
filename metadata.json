@@ -1,0 +1,5 @@
+{
+  "name": "Daily Earnings Calculator",
+  "description": "A financial tool to help users calculate the daily income required to cover their monthly expenses and achieve a desired profit goal. Users can add various monthly bills, specify a profit target, and the app will compute the daily amount they need to earn.",
+  "requestFramePermissions": []
+}
