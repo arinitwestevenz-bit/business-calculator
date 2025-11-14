@@ -70,7 +70,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ totalExpenses, profit, saving
                     className="w-full flex items-center justify-center space-x-2 bg-amber-600/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 hover:text-amber-200 transition-all rounded-lg py-3 font-semibold"
                 >
                     <SparklesIcon className="w-5 h-5" />
-                    <span>Get AI Financial Advice</span>
+                    <span>click for advice</span>
                 </button>
                 <button
                     onClick={onPreviewStatement}
